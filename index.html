@@ -17,7 +17,7 @@
   }
   * { box-sizing: border-box; }
   html, body { margin:0; min-height:100%; background:#111; }
-  body { display:grid; place-items:center; font-family:Manrope, sans-serif; }
+  body { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; font-family:Manrope, sans-serif; padding:28px 0; }
   #banner {
     width:800px;
     height:800px;
@@ -77,6 +77,10 @@
   .m1 { left:680px; top:430px; transform:rotate(18deg); }
   .m2 { left:33px; top:685px; transform:rotate(-22deg); }
   .m3 { left:675px; top:690px; transform:rotate(22deg); }
+  .downloadbar { width:800px; display:flex; justify-content:center; align-items:center; gap:14px; color:#d9c8b9; }
+  .downloadbar button { cursor:pointer; border:0; border-radius:999px; padding:14px 22px; color:#150700; background:linear-gradient(135deg, #ffb238, #ff7a18); font-weight:1000; font-size:16px; letter-spacing:.04em; box-shadow:0 16px 36px rgba(255,122,24,.28); }
+  .downloadbar button:active { transform:translateY(1px); }
+  .downloadbar span { font-size:13px; font-weight:800; opacity:.82; }
 </style>
 </head>
 <body>
@@ -88,8 +92,8 @@
     <h1 class="title">THE SHIB <span>BULL</span></h1>
     <p class="sub">SHIB holder momentum powered by the Ryoshi spirit.</p>
     <div class="logos">
-      <div class="coin shib"><img src="https://raw.githubusercontent.com/Shibfun/RYOSHI/refs/heads/main/images/shib.png" alt="SHIB logo"></div>
-      <div class="coin ryoshi"><img src="https://raw.githubusercontent.com/Shibfun/RYOSHI/refs/heads/main/images/RYOSHI.png" alt="RYOSHI logo"></div>
+      <div class="coin shib"><img src="https://raw.githubusercontent.com/Shibfun/RYOSHI/refs/heads/main/images/shib.png" alt="SHIB logo" crossorigin="anonymous"></div>
+      <div class="coin ryoshi"><img src="https://raw.githubusercontent.com/Shibfun/RYOSHI/refs/heads/main/images/RYOSHI.png" alt="RYOSHI logo" crossorigin="anonymous"></div>
     </div>
     <section class="stats">
       <article class="stat">
@@ -107,7 +111,12 @@
     </section>
     <div class="mark m1">◆</div><div class="mark m2">◆</div><div class="mark m3">◆</div>
   </main>
+  <div class="downloadbar">
+    <button id="downloadImageBtn" type="button">Download 800×800 PNG</button>
+    <span id="downloadStatus">Button is outside the banner and will not appear in the image.</span>
+  </div>
 
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const SHIB_TOKEN = ['0x95ad61b0a150d792', '19dcf64e1e6cc01f0b64c4ce'].join('');
 const THE_SHIB_BULL = ['0x23a0C2ba', 'B99fD2F864f5', 'cd8b2659ec3b05D10E45'].join('');
@@ -178,6 +187,38 @@ async function refreshLiveData() {
 
 refreshLiveData();
 setInterval(refreshLiveData, REFRESH_MS);
+
+async function downloadBannerPng() {
+  const status = $('downloadStatus');
+  const button = $('downloadImageBtn');
+  try {
+    status.textContent = 'Preparing image...';
+    button.disabled = true;
+    await document.fonts.ready;
+    await refreshLiveData();
+    if (!window.html2canvas) throw new Error('html2canvas failed to load');
+    const canvas = await html2canvas($('banner'), {
+      width: 800,
+      height: 800,
+      scale: 2,
+      backgroundColor: null,
+      useCORS: true,
+      allowTaint: false,
+      logging: false
+    });
+    const link = document.createElement('a');
+    link.download = `the-shib-bull-${new Date().toISOString().slice(0,10)}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    status.textContent = 'Downloaded current 800×800 banner.';
+  } catch (err) {
+    status.textContent = `Download failed: ${err.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+$('downloadImageBtn').addEventListener('click', downloadBannerPng);
 </script>
 </body>
 </html>
